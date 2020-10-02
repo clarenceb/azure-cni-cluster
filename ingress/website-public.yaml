@@ -1,0 +1,64 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: website-public
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: website-public
+  template:
+    metadata:
+      labels:
+        app: website-public
+    spec:
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      containers:
+      - name: website
+        image: nginx:stable-alpine
+        volumeMounts:
+        - name: index-html
+          mountPath: /usr/share/nginx/html
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        - containerPort: 80
+      volumes:
+        - name: index-html
+          configMap:
+            name: index.html
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: website-public
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: website-public
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: website-public-ingress
+  annotations:
+    kubernetes.io/ingress.class: ingress-public
+spec:
+  rules:
+  - host: aks-demos-cb.australiaeast.cloudapp.azure.com
+    http:
+      paths:
+      - backend:
+          serviceName: website-public
+          servicePort: 80
+        path: /

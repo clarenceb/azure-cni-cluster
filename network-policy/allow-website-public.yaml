@@ -1,0 +1,19 @@
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: website-ingress-policy
+  namespace: website-public
+spec:
+  podSelector:
+    matchLabels:
+      app: website-public
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          visibility: public
+    # - podSelector:
+    #     matchLabels:
+    #       app: nginx-ingress
+    # - ipBlock:
+    #     cidr: <public-ip>/32
