@@ -3,6 +3,8 @@ Ingress and Network Policy
 
 How to run multiple ingress controllers and restrict traffic with Network Policy.
 
+TODO: Network Policy is not working correctly.
+
 Create public ingress
 ---------------------
 
