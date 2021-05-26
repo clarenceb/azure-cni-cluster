@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aspnetapp
+  labels:
+    app: aspnetapp
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: aspnetapp
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: aspnetapp
+    spec:
+      containers:
+      - image: "mcr.microsoft.com/dotnet/core/samples:aspnetapp"
+        name: aspnetapp-image
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 250m
+            memory: 100Mi
+          requests:
+            cpu: 50m
+            memory: 20Mi
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /Privacy
+            port: 80
+            scheme: HTTP
+          periodSeconds: 4
+          timeoutSeconds: 3
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /Privacy
+            port: 80
+            scheme: HTTP
+          periodSeconds: 4
+          timeoutSeconds: 3
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sleep","90"]
+      terminationGracePeriodSeconds: 101
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aspnetapp
+spec:
+  selector:
+    app: aspnetapp
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+

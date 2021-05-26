@@ -1,0 +1,151 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"labels":{"addonmanager.kubernetes.io/mode":"Reconcile","app":"ingress-appgw"},"name":"ingress-appgw-deployment","namespace":"kube-system"},"spec":{"paused":false,"replicas":1,"revisionHistoryLimit":2,"selector":{"matchLabels":{"app":"ingress-appgw"}},"template":{"metadata":{"annotations":{"checksum/config":"e102fdd346da165573806ba0b0f8fedaf0af539279efad2cf0511aeba9b6eb37","cluster-autoscaler.kubernetes.io/safe-to-evict":"true","kubernetes.azure.com/metrics-scrape":"true","prometheus.io/path":"/metrics","prometheus.io/port":"8123","prometheus.io/scrape":"true","resource-id":"/subscriptions/4dcb4a28-e5f7-4a7a-beb1-724386994835/resourceGroups/aks-demos/providers/Microsoft.ContainerService/managedClusters/aks-cni"},"labels":{"app":"ingress-appgw","kubernetes.azure.com/managedby":"aks"}},"spec":{"affinity":{"nodeAffinity":{"preferredDuringSchedulingIgnoredDuringExecution":[{"preference":{"matchExpressions":[{"key":"kubernetes.azure.com/mode","operator":"In","values":["system"]}]},"weight":100}],"requiredDuringSchedulingIgnoredDuringExecution":{"nodeSelectorTerms":[{"matchExpressions":[{"key":"kubernetes.azure.com/cluster","operator":"Exists"},{"key":"type","operator":"NotIn","values":["virtual-kubelet"]},{"key":"kubernetes.io/os","operator":"In","values":["linux"]}]}]}}},"containers":[{"env":[{"name":"AZURE_CLOUD_PROVIDER_LOCATION","value":"/etc/kubernetes/azure.json"},{"name":"AGIC_POD_NAME","valueFrom":{"fieldRef":{"fieldPath":"metadata.name"}}},{"name":"AGIC_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"envFrom":[{"configMapRef":{"name":"ingress-appgw-cm"}}],"image":"mcr.microsoft.com/azure-application-gateway/kubernetes-ingress:1.2.1","imagePullPolicy":"IfNotPresent","livenessProbe":{"httpGet":{"path":"/health/alive","port":8123},"initialDelaySeconds":15,"periodSeconds":20},"name":"ingress-appgw-container","readinessProbe":{"httpGet":{"path":"/health/ready","port":8123},"initialDelaySeconds":5,"periodSeconds":10},"resources":{"limits":{"cpu":"700m","memory":"100Mi"},"requests":{"cpu":"100m","memory":"20Mi"}},"volumeMounts":[{"mountPath":"/etc/kubernetes/azure.json","name":"cloud-provider-config","readOnly":true}]}],"securityContext":{"runAsUser":0},"serviceAccountName":"ingress-appgw-sa","volumes":[{"hostPath":{"path":"/etc/kubernetes/azure.json","type":"File"},"name":"cloud-provider-config"}]}}}}
+  creationTimestamp: "2021-04-22T02:40:59Z"
+  generation: 1
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+    app: ingress-appgw
+  name: ingress-appgw-deployment
+  namespace: kube-system
+  resourceVersion: "7485"
+  uid: e88ccda9-1832-40d8-ba06-f50726cd202f
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: ingress-appgw
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/config: e102fdd346da165573806ba0b0f8fedaf0af539279efad2cf0511aeba9b6eb37
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+        kubernetes.azure.com/metrics-scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "8123"
+        prometheus.io/scrape: "true"
+        resource-id: /subscriptions/4dcb4a28-e5f7-4a7a-beb1-724386994835/resourceGroups/aks-demos/providers/Microsoft.ContainerService/managedClusters/aks-cni
+      creationTimestamp: null
+      labels:
+        app: ingress-appgw
+        kubernetes.azure.com/managedby: aks
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
+              - key: kubernetes.azure.com/mode
+                operator: In
+                values:
+                - system
+            weight: 100
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.azure.com/cluster
+                operator: Exists
+              - key: type
+                operator: NotIn
+                values:
+                - virtual-kubelet
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
+      containers:
+      - env:
+        - name: AZURE_CLOUD_PROVIDER_LOCATION
+          value: /etc/kubernetes/azure.json
+        - name: AGIC_POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: AGIC_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        envFrom:
+        - configMapRef:
+            name: ingress-appgw-cm
+        image: mcr.microsoft.com/azure-application-gateway/kubernetes-ingress:1.2.1
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health/alive
+            port: 8123
+            scheme: HTTP
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: ingress-appgw-container
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health/ready
+            port: 8123
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources:
+          limits:
+            cpu: 700m
+            memory: 100Mi
+          requests:
+            cpu: 100m
+            memory: 20Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/kubernetes/azure.json
+          name: cloud-provider-config
+          readOnly: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        runAsUser: 0
+      serviceAccount: ingress-appgw-sa
+      serviceAccountName: ingress-appgw-sa
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - hostPath:
+          path: /etc/kubernetes/azure.json
+          type: File
+        name: cloud-provider-config
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2021-04-22T02:41:15Z"
+    lastUpdateTime: "2021-04-22T02:41:15Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2021-04-22T02:40:59Z"
+    lastUpdateTime: "2021-04-22T02:41:15Z"
+    message: ReplicaSet "ingress-appgw-deployment-56bd99f974" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 1
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1

@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: aspnetappv3-ingress
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/connection-draining: "true"
+    appgw.ingress.kubernetes.io/connection-draining-timeout: "30"
+
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    cert-manager.io/acme-challenge-type: http01
+spec:
+  tls:
+    - hosts:
+      - aspnetappv2.aks.clarenceb.com
+      secretName: aspnetapp-secret-prodv3
+  rules:
+    - host: aspnetappv2.aks.clarenceb.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: aspnetapp
+              servicePort: 80
