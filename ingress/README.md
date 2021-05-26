@@ -5,6 +5,11 @@ How to run multiple ingress controllers and restrict traffic with Network Policy
 
 TODO: Network Policy is not working correctly.
 
+Prequisites
+-----------
+
+* Create an AKS cluster with Azure CNI networking
+
 Create public ingress
 ---------------------
 
