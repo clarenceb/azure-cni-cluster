@@ -10,7 +10,7 @@ Install OSM client:
 
 ```sh
 # Specify the OSM version that will be leveraged throughout these instructions
-OSM_VERSION=v0.8.2
+OSM_VERSION=v0.8.4
 
 curl -sL "https://github.com/openservicemesh/osm/releases/download/$OSM_VERSION/osm-$OSM_VERSION-linux-amd64.tar.gz" | tar -vxzf -
 ```
@@ -44,6 +44,10 @@ kubectl apply -f https://raw.githubusercontent.com/openservicemesh/osm/release-v
 kubectl logs -f $(kubectl get pod -n bookbuyer -o name) bookbuyer -n bookbuyer # CTLR+C
 kubectl logs -f $(kubectl get pod -n bookthief -o name) bookthief -n bookthief # CTRL+C
 
+# Also, check envoy proxy logs
+kubectl logs -f $(kubectl get pod -n bookbuyer -o name) envoy -n bookbuyer | jq # CTLR+C
+kubectl logs -f $(kubectl get pod -n bookthief -o name) envoy -n bookbuyer | jq # CTLR+C
+
 kubectl port-forward $(kubectl get pod -n bookbuyer -o name) -n bookbuyer 8080:14001
 kubectl port-forward $(kubectl get pod -n bookthief -o name) -n bookthief 8081:14001
 ```
@@ -57,21 +61,26 @@ Disable permissive traffic policy for OSM:
 kubectl patch ConfigMap -n kube-system osm-config --type merge --patch '{"data":{"permissive_traffic_policy_mode":"false"}}'
 
 # Note that no more books can be checked out
-kubectl logs $(kubectl get pod -n bookbuyer -o name) bookbuyer -n bookbuyer
+kubectl logs --tail=100 $(kubectl get pod -n bookbuyer -o name) bookbuyer -n bookbuyer
 ```
 
 Allow acess for the Book Buyer:
 
 ```sh
-kubectl apply -f access-policy.yaml
+kubectl apply -f osm/access-policy.yaml
 ```
 
 Note that Book Buyer can checkout buys but Book Thief cannot.
 
+```sh
+kubectl logs --tail=100 $(kubectl get pod -n bookbuyer -o name) bookbuyer -n bookbuyer
+kubectl logs --tail=100 $(kubectl get pod -n bookthief -o name) bookthief -n bookthief
+```
+
 Deploy Bookstore v2:
 
 ```sh
-kubectl apply -f bookstore-v2.yaml
+kubectl apply -f osm/bookstore-v2.yaml
 ```
 
 Only bookstore v1 should be incrementing.
@@ -79,7 +88,7 @@ Only bookstore v1 should be incrementing.
 Apply a traffic split to direct a portion of traffic to bookstore v2:
 
 ```sh
-kubectl apply -f traffic-split.yaml
+kubectl apply -f osm/traffic-split.yaml
 ```
 
 Expose services via NGINX ingress
@@ -123,6 +132,7 @@ code cm-stable-prometheus-server.yml
 # Paste changes from https://docs.microsoft.com/en-au/azure/aks/servicemesh-osm-about?pivots=client-operating-system-linux#tutorial-manually-deploy-prometheus-grafana-and-jaeger-to-view-open-service-mesh-osm-metrics-for-observability
 kubectl apply -f cm-stable-prometheus-server.yml
 
+PROM_POD_NAME=$(kubectl get pods -l "app=prometheus,component=server" -o jsonpath="{.items[0].metadata.name}")
 kubectl port-forward $PROM_POD_NAME 9090
 
 # Browse to: http://localhost:9090/targets
@@ -146,6 +156,10 @@ kubectl port-forward $GRAF_POD_NAME 3000
 ```
 
 Configure the [Grafana Prometheus data source](https://docs.microsoft.com/en-au/azure/aks/servicemesh-osm-about?pivots=client-operating-system-linux#configure-the-grafana-prometheus-data-source).
+
+```sh
+stable-prometheus-server.default.svc.cluster.local
+```
 
 Import the [Grafana dashboards](https://grafana.com/grafana/dashboards/14145).
 
@@ -181,7 +195,7 @@ Tracing with Jaegar
 
 ```sh
 kubectl create ns jaeger
-kubectl apply -f jaeger.yaml
+kubectl apply -f jaegar.yaml
 
 kubectl patch configmap osm-config -n kube-system -p '{"data":{"tracing_enable":"true", "tracing_address":"jaeger.jaeger.svc.cluster.local", "tracing_port":"9411", "tracing_endpoint":"/api/v2/spans"}}' --type=merge
 
@@ -190,6 +204,13 @@ kubectl port-forward -n jaeger $JAEGER_POD  16686:16686
 ```
 
 Browse tracing at: http://localhost:16686/
+
+Explore:
+
+* Find Traces for bookbuyer.
+* Deep Dependency Graph
+* System Architecture / DAG
+* 
 
 Clean-up
 --------

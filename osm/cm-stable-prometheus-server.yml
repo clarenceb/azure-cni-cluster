@@ -235,15 +235,15 @@ metadata:
   annotations:
     meta.helm.sh/release-name: stable
     meta.helm.sh/release-namespace: default
-  creationTimestamp: "2021-04-26T07:12:22Z"
+  creationTimestamp: "2021-06-02T01:08:20Z"
   labels:
     app: prometheus
     app.kubernetes.io/managed-by: Helm
-    chart: prometheus-13.8.0
+    chart: prometheus-14.1.1
     component: server
     heritage: Helm
     release: stable
   name: stable-prometheus-server
   namespace: default
-  resourceVersion: "16470"
-  uid: 2115a03b-7091-4120-aabd-a7006e01778f
+  resourceVersion: "9876"
+  uid: 9b6cbcd2-7d25-4bd5-b28f-5ba1d3d2e76b

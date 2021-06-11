@@ -6,7 +6,7 @@ export LOCATION="australiasoutheast"
 
 # AKS
 export CLUSTER="aks-cni"
-export K8S_VERSION="1.20.5"
+export K8S_VERSION="1.20.7"
 # export ZONES="1 2 3"
 export ZONES="0"
 export NODE_SIZE="Standard_DS2_v2"

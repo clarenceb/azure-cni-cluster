@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sandbox
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+  namespace: sandbox
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: ca-issuer
+  namespace: sandbox
+spec:
+  isCA: true
+  secretName: ca-key-pair
+  commonName: my-csi-app
+  issuerRef:
+    name: selfsigned-issuer
+    kind: Issuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Issuer
+metadata:
+  name: ca-issuer
+  namespace: sandbox
+spec:
+  ca:
+    secretName: ca-key-pair
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-csi-app
+  namespace: sandbox
+  labels:
+    app: my-csi-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-csi-app
+  template:
+    metadata:
+      labels:
+        app: my-csi-app
+    spec:
+      containers:
+        - name: my-csi-app
+          image: nginx:latest
+          ports:
+           - containerPort: 80
+          volumeMounts:
+          - name: tls
+            mountPath: /tls
+          - name: nginx-conf
+            mountPath: /etc/nginx/conf.d/default.conf
+            subPath: default.conf
+            readOnly: true
+      volumes:
+        - name: tls
+          csi:
+            driver: csi.cert-manager.io
+            volumeAttributes:
+              csi.cert-manager.io/issuer-name: ca-issuer
+              csi.cert-manager.io/dns-names: my-csi-app.sandbox.svc.cluster.local
+              csi.cert-manager.io/uri-sans: spiffe://my-csi-app.sandbox.cluster.local
+        - name: nginx-conf
+          configMap:
+            name: nginx-conf
+            items:
+              - key: default.conf
+                path: default.conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: my-csi-app
+  name: my-csi-app
+  namespace: sandbox
+spec:
+  ports:
+    - port: 443
+      targetPort: 443
+      protocol: TCP
+  selector:
+    app: my-csi-app
+  type: ClusterIP
