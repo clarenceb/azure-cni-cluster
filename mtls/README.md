@@ -87,6 +87,15 @@ Open issues
 
 * [Cannot chmod a read only filesystem](https://github.com/jetstack/cert-manager-csi/issues/26)
 
+Work around was to build my own docker image, see changes made to https://github.com/jetstack/cert-manager-csi in [patch.txt](./patch.txt).
+
+```sh
+make build
+make image
+docker tag gcr.io/jetstack-josh/cert-manager-csi:v0.1.0-alpha.1 clarenceb/cert-manager-csi:v0.1.0-alpha.1
+docker push
+```
+
 Resources
 ---------
 

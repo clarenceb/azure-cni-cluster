@@ -1,0 +1,28 @@
+diff --git a/deploy/cert-manager-csi-driver.yaml b/deploy/cert-manager-csi-driver.yaml
+index a634643..2105430 100644
+--- a/deploy/cert-manager-csi-driver.yaml
++++ b/deploy/cert-manager-csi-driver.yaml
+@@ -80,7 +80,8 @@ spec:
+             capabilities:
+               add: ["SYS_ADMIN"]
+             allowPrivilegeEscalation: true
+-          image: gcr.io/jetstack-josh/cert-manager-csi:v0.1.0-alpha.1
++          # image: gcr.io/jetstack-josh/cert-manager-csi:v0.1.0-alpha.1
++          image: clarenceb/cert-manager-csi:v0.1.0-alpha.1
+           imagePullPolicy: "IfNotPresent"
+           args :
+             - --node-id=$(NODE_ID)
+diff --git a/pkg/util/mount.go b/pkg/util/mount.go
+index ffa621d..53dcfd8 100644
+--- a/pkg/util/mount.go
++++ b/pkg/util/mount.go
+@@ -99,7 +99,8 @@ func makeMountArgs(source, target string, options []string) []string {
+ 	// Build mount command as follows:
+ 	//   mount [-t $fstype] [-o $options] [$source] $target
+ 	mountArgs := []string{}
+-	options = append(options, "bind", "ro")
++	//options = append(options, "bind", "ro")
++	options = append(options, "bind")
+ 	mountArgs = append(mountArgs, "-o", strings.Join(options, ","))
+ 	if len(source) > 0 {
+ 		mountArgs = append(mountArgs, source)
