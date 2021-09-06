@@ -210,7 +210,6 @@ Explore:
 * Find Traces for bookbuyer.
 * Deep Dependency Graph
 * System Architecture / DAG
-* 
 
 Clean-up
 --------
