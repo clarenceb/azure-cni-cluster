@@ -10,7 +10,7 @@ Install OSM client:
 
 ```sh
 # Specify the OSM version that will be leveraged throughout these instructions
-OSM_VERSION=v0.8.4
+OSM_VERSION=v0.11.1
 
 curl -sL "https://github.com/openservicemesh/osm/releases/download/$OSM_VERSION/osm-$OSM_VERSION-linux-amd64.tar.gz" | tar -vxzf -
 ```

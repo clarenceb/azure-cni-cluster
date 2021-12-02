@@ -26,10 +26,11 @@ AKS_IDENTITY_ID=$(az identity show --name $AKS_IDENTITY_NAME --resource-group $R
 
 AKS_SUBNET_ID=$(az network vnet subnet show --resource-group $RESOURCE_GROUP --vnet-name $VNET_NAME --name $AKS_SUBNET_NAME --query id -o tsv)
 
-# For OSM preview only
-az feature register --namespace "Microsoft.ContainerService" --name "AKS-OpenServiceMesh"
-az feature list -o table --query "[?contains(name, 'Microsoft.ContainerService/AKS-OpenServiceMesh')].{Name:name,State:properties.state}"
-az provider register --namespace Microsoft.ContainerService
+az monitor log-analytics workspace create \
+    --resource-group $RESOURCE_GROUP \
+    --workspace-name $LA_WORKPACE_NAME
+
+LA_WORKPACE_ID=$(az monitor log-analytics workspace show --resource-group $RESOURCE_GROUP --workspace-name $LA_WORKPACE_NAME --query id -o tsv)
 
 az aks create \
     --resource-group $RESOURCE_GROUP \
@@ -44,24 +45,33 @@ az aks create \
     -c $NODE_COUNT \
     --node-vm-size $NODE_SIZE \
     --node-osdisk-type Ephemeral \
-    --node-osdisk-size 30 \
+    --node-osdisk-size 60 \
     --enable-managed-identity \
-    -a monitoring,open-service-mesh \
+    -a $ENABLE_ADDONS \
+    --workspace-resource-id $LA_WORKPACE_ID \
     --assign-identity $AKS_IDENTITY_ID \
-    --generate-ssh-keys #\
-    # --zones $ZONES
+    --zones $ZONES \
+    --generate-ssh-keys
 
 az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER --overwrite-existing
 mkdir $HOME/.tools
+
 export PATH=$HOME/.tools:$PATH
-az aks install-cli --install-location $HOME/tools/kubectl --kubelogin-install-location $HOME/tools/kubelogin
+# Optional: Add above line to your $HOME/.bashrc to make it permanent
+
+az aks install-cli \
+    --install-location $HOME/tools/kubectl \
+    --kubelogin-install-location $HOME/tools/kubelogin \
+    --client-version $K8S_VERSION
+
 kubectl get nodes
 ```
 
 Demos
 -----
 
-* [Ingress and Network Policy](./ingress/)
+* [Ingress with Network Policy](./ingress/)
+* [Network Policy](./network-policy)
 * [Application Gateway Ingress Controller](./agic/)
 * [Open Service Mesh](./osm/)
-* [Mutal TLS](./mtls/)
+* [Mutal TLS with Cert-Manager CSI driver](./mtls/)

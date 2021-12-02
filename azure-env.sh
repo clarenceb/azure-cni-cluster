@@ -1,17 +1,19 @@
 #!/bin/bash
 
 export RESOURCE_GROUP="aks-demos"
-export LOCATION="australiasoutheast"
-#export LOCATION="australiaeast"
+export LOCATION="australiaeast"
 
 # AKS
 export CLUSTER="aks-cni"
-export K8S_VERSION="1.20.7"
-# export ZONES="1 2 3"
-export ZONES="0"
+export K8S_VERSION="1.21.2"
+export ZONES="1 2 3"
+
 export NODE_SIZE="Standard_DS2_v2"
 export NODE_COUNT="3"
 export AKS_IDENTITY_NAME="aks-cni-identity"
+
+export ENABLE_ADDONS="monitoring,open-service-mesh"
+export LA_WORKPACE_NAME="aks-la-workspace"
 
 # AKS VNET and subnet
 export VNET_NAME="aks-vnet"
